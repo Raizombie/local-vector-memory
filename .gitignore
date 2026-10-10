@@ -1,0 +1,7 @@
+# 宿主 SDK 副本：由 Hana 的 scripts/sync-app-sdk.mjs 从当前 Hana 版本导出，
+# 属于依赖而不是本项目源码，所以不入库。安装包（Release 附件）里是包含它的。
+sdk/
+
+# Python 缓存
+__pycache__/
+*.pyc

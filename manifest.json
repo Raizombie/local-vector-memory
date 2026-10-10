@@ -1,0 +1,119 @@
+{
+  "manifestVersion": 2,
+  "id": "local-vector-memory",
+  "name": "本地向量记忆",
+  "version": "1.0.0",
+  "description": "给 HanaAgent 的 facts.db 加一层本地向量索引：FTS5 + 语义混合检索、跨 agent 自动补嵌入、嵌入模型体检。数据仍以 facts.db 为准，向量只是旁车。",
+  "entry": "index.js",
+  "icon": "assets/icon.svg",
+  "minAppVersion": "1.0.6-beta",
+  "capabilities": [
+    "app/tools.expose-to-model",
+    "app/process.spawn"
+  ],
+  "network": {
+    "allowedHosts": [
+      "127.0.0.1",
+      "localhost",
+      "api.siliconflow.cn",
+      "api.openai.com"
+    ],
+    "methods": ["GET", "POST"],
+    "allowLocalhost": true,
+    "defaultTimeoutMs": 30000,
+    "maxResponseBytes": 10485760
+  },
+  "contributes": {
+    "settings": {
+      "title": "本地向量记忆",
+      "ui": { "route": "/panel.html" },
+      "schema": {
+        "properties": {
+          "embeddingBaseUrl": {
+            "type": "string",
+            "title": "Embedding 服务地址",
+            "default": "http://127.0.0.1:1234/v1",
+            "description": "OpenAI 兼容端点。LM Studio 默认 1234，Ollama 11434，也可填云端（如 https://api.siliconflow.cn/v1）"
+          },
+          "embeddingApiKey": {
+            "type": "string",
+            "title": "Embedding API Key",
+            "default": "",
+            "description": "本地端点可留空"
+          },
+          "embeddingModel": {
+            "type": "string",
+            "title": "Embedding 模型",
+            "default": "text-embedding-nomic-embed-text-v1.5@q8_0",
+            "description": "中文记忆强烈建议用多语言模型，如 bge-m3 或 Qwen3-Embedding-0.6B"
+          },
+          "dimensions": {
+            "type": "number",
+            "title": "向量维度",
+            "default": 768,
+            "description": "必须与模型实际输出维度一致，否则首次嵌入即报错"
+          },
+          "pythonCommand": {
+            "type": "string",
+            "title": "Python 命令",
+            "default": "python",
+            "description": "默认 python；Windows 上也可是 py -3，或 conda 环境的绝对路径"
+          },
+          "autoMaintain": {
+            "type": "boolean",
+            "title": "定时轮询补全",
+            "default": true,
+            "description": "按下面的间隔定时扫一遍所有 agent 的记忆库。事件驱动没收到信号、或者记忆不是由对话写进来的时候，靠它兜底。"
+          },
+          "eventDriven": {
+            "type": "boolean",
+            "title": "回合结束触发补全",
+            "default": true,
+            "description": "订阅 Hana 的回合结束信号（turn_end / message_end），收到后延迟 10 秒补一次，新记忆几秒内就能被语义搜到。与定时轮询可同时开，也可只开一个。"
+          },
+          "maintainIntervalMs": {
+            "type": "number",
+            "title": "自动补嵌入间隔（毫秒）",
+            "default": 60000
+          },
+          "batchSize": {
+            "type": "number",
+            "title": "每批嵌入条数",
+            "default": 32
+          },
+          "ftsCandidates": {
+            "type": "number",
+            "title": "关键词候选数",
+            "default": 200
+          },
+          "vectorCandidates": {
+            "type": "number",
+            "title": "语义候选数",
+            "default": 80
+          },
+          "defaultLimit": {
+            "type": "number",
+            "title": "默认返回条数",
+            "default": 10
+          },
+          "fusion": {
+            "type": "string",
+            "title": "融合方式",
+            "enum": ["minmax", "linear"],
+            "default": "minmax",
+            "description": "minmax：先把语义与关键词各自在候选集内归一化到 0-1 再加权，两边量纲对齐；linear：直接加权相加（旧行为，语义容易被关键词量纲盖住）"
+          }
+        }
+      }
+    },
+    "cards": [
+      {
+        "id": "panel",
+        "title": "本地向量记忆",
+        "description": "查看各 agent 记忆库的向量覆盖度、嵌入模型体检结果，并手动补全。",
+        "route": "/panel.html",
+        "face": { "image": "assets/cover.svg" }
+      }
+    ]
+  }
+}

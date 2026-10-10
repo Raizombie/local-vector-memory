@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>本地向量记忆</title>
+  <link rel="stylesheet" href="./assets/panel.css">
+</head>
+<body>
+  <h1>本地向量记忆</h1>
+  <p class="sub" id="summary">加载中…</p>
+
+  <div class="card">
+    <div class="spread">
+      <strong>记忆库覆盖</strong>
+      <span class="row">
+        <button id="btn-refresh">刷新</button>
+        <button id="btn-maintain" class="primary">全部补全</button>
+      </span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>agent</th><th>事实</th><th>已嵌入</th><th>覆盖度</th><th>待补</th><th></th></tr>
+      </thead>
+      <tbody id="agent-rows">
+        <tr><td colspan="6" class="note">读取中…</td></tr>
+      </tbody>
+    </table>
+    <p class="note" id="maintain-note"></p>
+  </div>
+
+  <div class="card">
+    <div class="spread">
+      <strong>嵌入模型体检</strong>
+      <button id="btn-probe">跑体检</button>
+    </div>
+    <p class="note" id="probe-note">测一下当前模型对中文到底有没有区分度。「改写句」的相似度必须明显高于「无关句」，否则语义检索只是在添乱。</p>
+    <div id="probe-result"></div>
+  </div>
+
+  <div class="card">
+    <div class="spread">
+      <strong>检索测试</strong>
+      <button id="btn-search">检索</button>
+    </div>
+    <div class="row">
+      <select id="search-agent" style="max-width:150px"></select>
+      <input type="text" id="search-query" placeholder="用户喜欢喝什么">
+    </div>
+    <div id="search-result"></div>
+  </div>
+
+  <div class="card">
+    <div class="spread">
+      <strong>设置</strong>
+      <button id="btn-save" class="primary">保存</button>
+    </div>
+    <label class="field"><span>Embedding 服务</span><input type="text" id="cfg-embeddingBaseUrl"></label>
+    <label class="field"><span>API Key</span><input type="text" id="cfg-embeddingApiKey" placeholder="本地端点可留空"></label>
+    <label class="field"><span>模型</span><input type="text" id="cfg-embeddingModel"></label>
+    <label class="field"><span>维度</span><input type="number" id="cfg-dimensions" min="1"></label>
+    <label class="field"><span>Python 命令</span><input type="text" id="cfg-pythonCommand" placeholder="python 或 py -3"></label>
+    <label class="field"><span>回合结束触发</span><input type="checkbox" id="cfg-eventDriven" style="justify-self:start"></label>
+    <label class="field"><span>定时轮询</span><input type="checkbox" id="cfg-autoMaintain" style="justify-self:start"></label>
+    <label class="field"><span>轮询间隔(ms)</span><input type="number" id="cfg-maintainIntervalMs" min="15000" step="5000"></label>
+    <p class="note">两种补全方式随时可改，也可以只开一个：只开「回合结束触发」最省，但万一信号丢了就没人兜；只开「定时轮询」兼容性最好，代价是空闲时也会按点扫一圈。两个都关也不影响手动点「全部补全」。</p>
+    <label class="field"><span>融合方式</span><select id="cfg-fusion"><option value="minmax">minmax（量纲对齐，推荐）</option><option value="linear">linear（旧的直接加权）</option></select></label>
+    <p class="note">改了模型或维度后，保存→点「全部补全」重建向量，再跑一次体检确认区分度。</p>
+    <p class="err" id="panel-error"></p>
+  </div>
+
+  <script type="module" src="./assets/panel.js"></script>
+</body>
+</html>
